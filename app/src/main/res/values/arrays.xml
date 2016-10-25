@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="map_long_click_todo">
+        <item>Add as a circular geofence.</item>
+        <item>Add to a polygon geofence.</item>
+    </string-array>
+</resources>

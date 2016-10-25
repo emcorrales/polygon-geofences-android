@@ -6,17 +6,20 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ArrayAdapter;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,
+        OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
     private static final int REQUEST_PERMISSION_LOCATION = 34839;
 
     private GoogleMap mMap;
@@ -52,8 +55,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+    public void onClick(View v) {
+        startActivity(new Intent(this, GeofenceEditorActivity.class));
+    }
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMapLongClickListener(this);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
@@ -65,7 +74,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onClick(View v) {
-        startActivity(new Intent(this, GeofenceEditorActivity.class));
+    public void onMapLongClick(LatLng latLng) {
+        final String title = latLng.latitude + ", " + latLng.longitude;
+
+        ArrayAdapter adapter = ArrayAdapter.createFromResource(this,
+                R.array.map_long_click_todo, android.R.layout.select_dialog_singlechoice);
+
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, null)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setSingleChoiceItems(adapter, 0, null)
+                .show();
     }
 }
