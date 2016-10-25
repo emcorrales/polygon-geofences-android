@@ -38,7 +38,7 @@ public class GeofenceEditorActivity extends AppCompatActivity implements View.On
             double longitude = Double.valueOf(longitudeEt.getText().toString());
             float accuracy = Float.valueOf(radiusEt.getText().toString());
         } else {
-            Snackbar.make(v, R.string.validation_required, Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(v, R.string.validation_failed, Snackbar.LENGTH_SHORT).show();
         }
     }
 
