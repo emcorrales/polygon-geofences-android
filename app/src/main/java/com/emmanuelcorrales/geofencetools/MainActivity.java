@@ -1,6 +1,7 @@
 package com.emmanuelcorrales.geofencetools;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -65,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onClick(View v) {
-        Snackbar.make(v, "Replace with your own action", Snackbar.LENGTH_SHORT)
-                .setAction("Action", null).show();
+        startActivity(new Intent(this, GeofenceEditorActivity.class));
     }
 }

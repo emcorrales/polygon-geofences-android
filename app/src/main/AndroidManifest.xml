@@ -18,9 +18,16 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".GeofenceEditorActivity"
+            android:label="@string/title_activity_geofence_editor"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCIdcLUdnB-QIvFUzB_Oys11qr9SQ1lM7k" />
+
     </application>
 
 </manifest>
