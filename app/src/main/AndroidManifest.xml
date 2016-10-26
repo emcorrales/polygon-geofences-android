@@ -17,7 +17,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".GeofenceEditorActivity"
             android:label="@string/title_activity_geofence_editor"
@@ -28,6 +27,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCIdcLUdnB-QIvFUzB_Oys11qr9SQ1lM7k" />
 
+        <service
+            android:name=".GeofenceTransitionIntentService"
+            android:exported="false" />
     </application>
 
 </manifest>

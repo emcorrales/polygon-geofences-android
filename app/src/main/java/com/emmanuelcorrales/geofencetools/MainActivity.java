@@ -1,16 +1,26 @@
 package com.emmanuelcorrales.geofencetools;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -26,14 +36,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
-        OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerDragListener {
+        OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerDragListener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback {
+
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 34839;
+    private static final String GEOFENCE_ID = TAG;
 
     private GoogleMap mMap;
     private List<Marker> mMarkers = new ArrayList<>();
     private Polygon mPolygon;
     private Marker mCenterMarker;
     private Circle mCircle;
+    private PendingIntent mGeofencePendingIntent;
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +62,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = createGoogleApiClient();
+        }
+        if (!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
     }
 
     @Override
@@ -85,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onMapLongClick(LatLng latLng) {
         mMarkers.add(mMap.addMarker(new MarkerOptions().position(latLng).draggable(true)));
         mMap.setOnMarkerDragListener(this);
-        redraw();
+        update();
     }
 
     @Override
@@ -95,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onMarkerDrag(Marker marker) {
-        redraw();
+        update();
     }
 
     @Override
@@ -103,7 +126,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void redraw() {
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.d(TAG, "onConnected()");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(TAG, "onConnectionSuspended()");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(TAG, "onConnectionFailed()");
+    }
+
+    @Override
+    public void onResult(@NonNull Result result) {
+        Log.d(TAG, "onResult()");
+    }
+
+    private void update() {
         if (mMarkers.size() <= 2) {
             return;
         }
@@ -122,6 +165,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mCenterMarker.remove();
         }
         mCenterMarker = mMap.addMarker(new MarkerOptions().position(mCircle.getCenter()));
+        List<Geofence> geofences = new ArrayList<>();
+        Geofence geofence = new Geofence.Builder()
+                .setRequestId(GEOFENCE_ID)
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                .setCircularRegion(mCircle.getCenter().latitude, mCircle.getCenter().longitude,
+                        (float) mCircle.getRadius())
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER
+                        | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT)
+                .setLoiteringDelay(1000)
+                .build();
+        geofences.add(geofence);
+        addGeofences(geofences);
     }
 
     private CircleOptions getCircularFence() {
@@ -151,6 +206,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .center(new LatLng(latMid, longMid))
                 .radius(radius)
                 .strokeColor(Color.GREEN);
+    }
+
+    private GoogleApiClient createGoogleApiClient() {
+        return new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    private void addGeofences(List<Geofence> geofenceList) {
+        if (geofenceList == null) {
+            throw new IllegalArgumentException("Argument 'geofenceList' cannot be null.");
+        }
+
+        if (!mGoogleApiClient.isConnected()) {
+            Log.d(TAG, "Google API client is not connected!");
+            return;
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            LocationServices.GeofencingApi.addGeofences(
+                    mGoogleApiClient,
+                    createGeofencingRequest(geofenceList),
+                    GeofenceTransitionIntentService.newPendingIntent(this)
+            ).setResultCallback(this);
+
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_PERMISSION_LOCATION);
+        }
+    }
+
+    private static GeofencingRequest createGeofencingRequest(List<Geofence> geofenceList) {
+        if (geofenceList == null) {
+            throw new IllegalArgumentException("Argument 'geofenceList' cannot be null.");
+        }
+        return new GeofencingRequest.Builder()
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_DWELL)
+                .addGeofences(geofenceList)
+                .build();
     }
 
     public static double computeDistance(double lat_a, double lng_a, double lat_b, double lng_b) {
