@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        mGeofencePendingIntent = GeofenceTransitionIntentService.newPendingIntent(this);
+
         if (mGoogleApiClient == null) {
             mGoogleApiClient = createGoogleApiClient();
         }
@@ -165,6 +167,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mCenterMarker.remove();
         }
         mCenterMarker = mMap.addMarker(new MarkerOptions().position(mCircle.getCenter()));
+
+        removeGeofences();
         List<Geofence> geofences = new ArrayList<>();
         Geofence geofence = new Geofence.Builder()
                 .setRequestId(GEOFENCE_ID)
@@ -232,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             LocationServices.GeofencingApi.addGeofences(
                     mGoogleApiClient,
                     createGeofencingRequest(geofenceList),
-                    GeofenceTransitionIntentService.newPendingIntent(this)
+                    mGeofencePendingIntent
             ).setResultCallback(this);
 
         } else {
@@ -240,6 +244,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_PERMISSION_LOCATION);
         }
+    }
+
+    private void removeGeofences() {
+        Log.d(TAG, "removeGeofences()");
+        if (mGoogleApiClient == null || mGeofencePendingIntent == null) {
+            Log.d(TAG, "Failed to remove because either one of the " +
+                    "arguments mGoogleApiClient or mGeofencePendingIntent is null.");
+            return;
+        }
+        LocationServices.GeofencingApi
+                .removeGeofences(mGoogleApiClient, mGeofencePendingIntent)
+                .setResultCallback(this);
+
     }
 
     private static GeofencingRequest createGeofencingRequest(List<Geofence> geofenceList) {
