@@ -1,7 +1,6 @@
 package com.emmanuelcorrales.geofencetools;
 
 import android.Manifest;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -48,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Polygon mPolygon;
     private Marker mCenterMarker;
     private Circle mCircle;
-    private PendingIntent mGeofencePendingIntent;
     private GoogleApiClient mGoogleApiClient;
 
     @Override
@@ -62,8 +60,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        mGeofencePendingIntent = GeofenceTransitionIntentService.newPendingIntent(this);
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = createGoogleApiClient();
@@ -236,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             LocationServices.GeofencingApi.addGeofences(
                     mGoogleApiClient,
                     createGeofencingRequest(geofenceList),
-                    mGeofencePendingIntent
+                    GeofenceTransitionIntentService.newPendingIntent(this, convertMarkersToLatlng(mMarkers))
             ).setResultCallback(this);
 
         } else {
@@ -248,15 +244,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void removeGeofences() {
         Log.d(TAG, "removeGeofences()");
-        if (mGoogleApiClient == null || mGeofencePendingIntent == null) {
-            Log.d(TAG, "Failed to remove because either one of the " +
-                    "arguments mGoogleApiClient or mGeofencePendingIntent is null.");
+        if (mGoogleApiClient == null) {
+            Log.d(TAG, "Failed to remove geofence because Google API client is null!");
             return;
         }
-        LocationServices.GeofencingApi
-                .removeGeofences(mGoogleApiClient, mGeofencePendingIntent)
-                .setResultCallback(this);
-
+        List<String> geofences = new ArrayList<>();
+        geofences.add(GEOFENCE_ID);
+        LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, geofences);
     }
 
     private static GeofencingRequest createGeofencingRequest(List<Geofence> geofenceList) {
