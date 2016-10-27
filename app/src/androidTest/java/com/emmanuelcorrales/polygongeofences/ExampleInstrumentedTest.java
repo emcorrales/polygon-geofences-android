@@ -1,4 +1,4 @@
-package com.emmanuelcorrales.geofencetools;
+package com.emmanuelcorrales.polygongeofences;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

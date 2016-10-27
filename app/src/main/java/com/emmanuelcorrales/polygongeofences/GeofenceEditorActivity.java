@@ -1,4 +1,4 @@
-package com.emmanuelcorrales.geofencetools;
+package com.emmanuelcorrales.polygongeofences;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;

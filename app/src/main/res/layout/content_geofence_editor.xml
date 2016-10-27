@@ -11,7 +11,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.emmanuelcorrales.geofencetools.GeofenceEditorActivity"
+    tools:context="com.emmanuelcorrales.polygongeofences.GeofenceEditorActivity"
     tools:showIn="@layout/activity_geofence_editor">
 
     <android.support.design.widget.TextInputLayout

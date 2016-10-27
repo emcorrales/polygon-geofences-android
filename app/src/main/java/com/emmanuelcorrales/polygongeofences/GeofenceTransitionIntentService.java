@@ -1,4 +1,4 @@
-package com.emmanuelcorrales.geofencetools;
+package com.emmanuelcorrales.polygongeofences;
 
 import android.app.IntentService;
 import android.app.NotificationManager;

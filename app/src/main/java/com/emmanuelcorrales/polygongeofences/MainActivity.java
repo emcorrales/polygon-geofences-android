@@ -1,4 +1,4 @@
-package com.emmanuelcorrales.geofencetools;
+package com.emmanuelcorrales.polygongeofences;
 
 import android.Manifest;
 import android.content.Intent;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.emmanuelcorrales.geofencetools">
+    package="com.emmanuelcorrales.polygongeofences">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
@@ -10,7 +10,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".MainActivity">
+        <activity android:name="com.emmanuelcorrales.polygongeofences.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -18,9 +18,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".GeofenceEditorActivity"
+            android:name="com.emmanuelcorrales.polygongeofences.GeofenceEditorActivity"
             android:label="@string/title_activity_geofence_editor"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName="com.emmanuelcorrales.polygongeofences.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <meta-data
@@ -28,7 +28,7 @@
             android:value="AIzaSyCIdcLUdnB-QIvFUzB_Oys11qr9SQ1lM7k" />
 
         <service
-            android:name=".GeofenceTransitionIntentService"
+            android:name="com.emmanuelcorrales.polygongeofences.GeofenceTransitionIntentService"
             android:exported="false" />
     </application>
 
