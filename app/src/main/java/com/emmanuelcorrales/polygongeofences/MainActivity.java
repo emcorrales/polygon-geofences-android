@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -31,6 +32,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -187,10 +189,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private CircleOptions getCircularFence() {
-        double latMin = Double.MAX_VALUE;
-        double latMax = Double.MIN_VALUE;
-        double longMin = Double.MAX_VALUE;
-        double longMax = Double.MIN_VALUE;
+        double latMin = 180;
+        double latMax = -180;
+        double longMin = 180;
+        double longMax = -180;
 
         for (Marker marker : mMarkers) {
             if (marker.getPosition().latitude < latMin) {
@@ -208,7 +210,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         double latMid = (latMin + latMax) / 2;
         double longMid = (longMin + longMax) / 2;
-        double radius = computeDistance(latMid, longMid, latMax, longMax);
+        float[] result = new float[1];
+        Location.distanceBetween(latMid, longMid, latMax, longMax, result);
+        double radius = result[0];
         return new CircleOptions()
                 .center(new LatLng(latMid, longMid))
                 .radius(radius)
@@ -241,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     createGeofencingRequest(geofenceList),
                     GeofenceTransitionIntentService.newPendingIntent(this, convertMarkersToLatlng(mMarkers))
             ).setResultCallback(this);
-
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -268,19 +271,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_DWELL)
                 .addGeofences(geofenceList)
                 .build();
-    }
-
-    public static double computeDistance(double lat_a, double lng_a, double lat_b, double lng_b) {
-        double earthRadius = 3958.75;
-        double latDiff = Math.toRadians(lat_b - lat_a);
-        double lngDiff = Math.toRadians(lng_b - lng_a);
-        double a = Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
-                Math.cos(Math.toRadians(lat_a)) * Math.cos(Math.toRadians(lat_b)) *
-                        Math.sin(lngDiff / 2) * Math.sin(lngDiff / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = earthRadius * c;
-        int meterConversion = 1609;
-        return distance * meterConversion;
     }
 
     private static List<LatLng> convertMarkersToLatlng(List<Marker> markers) {
