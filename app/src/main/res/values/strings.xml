@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Geofence Tools</string>
+    <string name="app_name">Polygon Geofences</string>
     <string name="title_activity_geofence_editor">Edit Geofence</string>
 
     <!--activity_geofence_editor.xml-->
