@@ -21,7 +21,10 @@ import java.util.List;
 
 public class GeofenceTransitionIntentService extends IntentService {
     private static final String TAG = GeofenceTransitionIntentService.class.getSimpleName();
-    private static final int NOTIFICATION_ID = 4858;
+    private static final int NOTIFICATION_ENTER = 2222;
+    private static final int NOTIFICATION_EXIT = 1111;
+    private static final int NOTIFICATION_DWELL = 555;
+    private static final int NOTIFICATION_INSIDE_POLYGON = 777;
     private static final String KEY_POLYGON_POINTS_COUNT = "key_polygon_points_count";
     private static final String KEY_LATITUDE = "key_lat";
     private static final String KEY_LONGITUDE = "key_long";
@@ -53,17 +56,17 @@ public class GeofenceTransitionIntentService extends IntentService {
         switch (transition) {
             case Geofence.GEOFENCE_TRANSITION_ENTER:
                 Log.d(TAG, "Entered the geofence.");
-                showNotification("Entered the circular geofence.");
+                showNotification("Entered the circular geofence.", NOTIFICATION_ENTER);
                 break;
 
             case Geofence.GEOFENCE_TRANSITION_EXIT:
                 Log.d(TAG, "Exited the geofence.");
-                showNotification("Exited the circular geofence.");
+                showNotification("Exited the circular geofence.", NOTIFICATION_EXIT);
                 break;
 
             case Geofence.GEOFENCE_TRANSITION_DWELL:
                 Log.d(TAG, "Dwelling on the geofence.");
-                showNotification("Dwells inside the circular geofence.");
+                showNotification("Dwells inside the circular geofence.", NOTIFICATION_DWELL);
                 break;
 
             default:
@@ -77,21 +80,21 @@ public class GeofenceTransitionIntentService extends IntentService {
             LatLng triggeredPoint = new LatLng(location.getLatitude(), location.getLongitude());
             if (PolyUtil.containsLocation(triggeredPoint, points, true)) {
                 Log.d(TAG, "Inside the polygon geofence.");
-                showNotification("Inside the polygon geofence.");
+                showNotification("Inside the polygon geofence.", NOTIFICATION_INSIDE_POLYGON);
             } else {
                 Log.d(TAG, "Not inside the polygon geofence.");
             }
         }
     }
 
-    private void showNotification(String message) {
+    private void showNotification(String message, int notifId) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(message)
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.notify(NOTIFICATION_ID, builder.build());
+        nm.notify(notifId, builder.build());
     }
 
     /**
