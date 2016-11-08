@@ -32,6 +32,10 @@
         <service
             android:name="com.emmanuelcorrales.polygongeofences.GeofenceTransitionIntentService"
             android:exported="false" />
+
+        <service
+            android:name="com.emmanuelcorrales.polygongeofences.LocationUpdateService"
+            android:exported="false" />
     </application>
 
 </manifest>
