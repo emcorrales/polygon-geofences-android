@@ -43,9 +43,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 34839;
     private static final String GEOFENCE_ID = TAG;
+    private static final String KEY_POINT = "key_points";
 
     private GoogleMap mMap;
     private List<Marker> mMarkers = new ArrayList<>();
+    private List<LatLng> mLatLngList = new ArrayList<>();
     private Polygon mPolygon;
     private Marker mCenterMarker;
     private Circle mCircle;
@@ -69,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
+        if (savedInstanceState != null) {
+            mLatLngList = savedInstanceState.getParcelableArrayList(KEY_POINT);
+        }
     }
 
     @Override
@@ -85,6 +90,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        ArrayList<LatLng> points = convertMarkersToLatlng(mMarkers);
+        outState.putParcelableArrayList(KEY_POINT, points);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -107,6 +119,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         } else {
             mMap.setMyLocationEnabled(true);
+        }
+        if (mLatLngList != null) {
+            for (LatLng latLng : mLatLngList) {
+                mMarkers.add(mMap.addMarker(new MarkerOptions().position(latLng).draggable(true)));
+            }
+            redraw();
         }
     }
 
@@ -156,6 +174,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mMarkers.size() <= 2) {
             return;
         }
+        redraw();
+        refreshGeofences();
+    }
+
+    private void redraw() {
+        if (mMarkers.size() <= 2) {
+            return;
+        }
         if (mPolygon != null) {
             mPolygon.remove();
         }
@@ -171,20 +197,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mCenterMarker.remove();
         }
         mCenterMarker = mMap.addMarker(new MarkerOptions().position(mCircle.getCenter()));
-
-        removeGeofences();
-        List<Geofence> geofences = new ArrayList<>();
-        Geofence geofence = new Geofence.Builder()
-                .setRequestId(GEOFENCE_ID)
-                .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                .setCircularRegion(mCircle.getCenter().latitude, mCircle.getCenter().longitude,
-                        (float) mCircle.getRadius())
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER
-                        | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT)
-                .setLoiteringDelay(1000)
-                .build();
-        geofences.add(geofence);
-        addGeofences(geofences);
     }
 
     private CircleOptions getCircularFence() {
@@ -224,6 +236,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+    }
+
+    private void refreshGeofences() {
+        removeGeofences();
+        List<Geofence> geofences = new ArrayList<>();
+        Geofence geofence = new Geofence.Builder()
+                .setRequestId(GEOFENCE_ID)
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                .setCircularRegion(mCircle.getCenter().latitude, mCircle.getCenter().longitude,
+                        (float) mCircle.getRadius())
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER
+                        | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT)
+                .setLoiteringDelay(1000)
+                .build();
+        geofences.add(geofence);
+        addGeofences(geofences);
     }
 
     private void addGeofences(List<Geofence> geofenceList) {
@@ -272,8 +300,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .build();
     }
 
-    private static List<LatLng> convertMarkersToLatlng(List<Marker> markers) {
-        List<LatLng> points = new ArrayList<>();
+    private static ArrayList<LatLng> convertMarkersToLatlng(List<Marker> markers) {
+        ArrayList<LatLng> points = new ArrayList<>();
         for (Marker marker : markers) {
             points.add(marker.getPosition());
         }
