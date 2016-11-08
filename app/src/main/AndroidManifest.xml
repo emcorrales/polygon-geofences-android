@@ -10,10 +10,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        
-        <activity
-            android:name="com.emmanuelcorrales.polygongeofences.MainActivity"
-            android:screenOrientation="portrait">
+
+        <activity android:name="com.emmanuelcorrales.polygongeofences.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
