@@ -273,10 +273,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private static List<LatLng> convertMarkersToLatlng(List<Marker> markers) {
-        List<LatLng> polygonPoints = new ArrayList<>();
+        List<LatLng> points = new ArrayList<>();
         for (Marker marker : markers) {
-            polygonPoints.add(marker.getPosition());
+            points.add(marker.getPosition());
         }
-        return polygonPoints;
+        return points;
     }
 }
