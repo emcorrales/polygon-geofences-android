@@ -58,15 +58,16 @@ public class GeofenceTransitionIntentService extends IntentService {
                 startService(intent);
                 break;
 
+            case Geofence.GEOFENCE_TRANSITION_DWELL:
+                Log.d(TAG, "Dwelling on the geofence.");
+                startService(intent);
+                showNotification("Dwells inside the circular geofence.", NOTIFICATION_DWELL);
+                break;
+
             case Geofence.GEOFENCE_TRANSITION_EXIT:
                 Log.d(TAG, "Exited the geofence.");
                 showNotification("Exited the circular geofence.", NOTIFICATION_EXIT);
                 stopService(intent);
-                break;
-
-            case Geofence.GEOFENCE_TRANSITION_DWELL:
-                Log.d(TAG, "Dwelling on the geofence.");
-                showNotification("Dwells inside the circular geofence.", NOTIFICATION_DWELL);
                 break;
 
             default:
