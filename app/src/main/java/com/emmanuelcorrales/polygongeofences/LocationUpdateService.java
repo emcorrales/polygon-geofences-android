@@ -48,8 +48,9 @@ public class LocationUpdateService extends Service implements GoogleApiClient.Co
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
-        mPolygonPoints = readFlattenedArrayExtras(intent);
-
+        if (intent != null) {
+            mPolygonPoints = readFlattenedArrayExtras(intent);
+        }
         if (mGoogleApiClient == null) {
             mGoogleApiClient = createGoogleApiClient();
         }
@@ -92,7 +93,7 @@ public class LocationUpdateService extends Service implements GoogleApiClient.Co
 
     @Override
     public void onLocationChanged(Location location) {
-        if (location == null) {
+        if (location == null || mPolygonPoints == null || mPolygonPoints.size() < 3) {
             return;
         }
         String msg = "";
@@ -140,6 +141,9 @@ public class LocationUpdateService extends Service implements GoogleApiClient.Co
     }
 
     private static List<LatLng> readFlattenedArrayExtras(Intent intent) {
+        if (intent == null) {
+            throw new IllegalArgumentException("Argument 'intent' cannot be null.");
+        }
         List<LatLng> points = new ArrayList<>();
         int count = intent.getIntExtra(KEY_POLYGON_POINTS_COUNT, 0);
         for (int i = 0; i < count; i++) {
